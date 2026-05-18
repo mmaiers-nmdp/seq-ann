@@ -29,7 +29,6 @@ warnings.simplefilter("ignore", BiopythonExperimentalWarning)
 
 from Bio.Seq import Seq
 from Bio import pairwise2
-from Bio.Alphabet import IUPAC
 from BioSQL.BioSeq import DBSeq
 from BioSQL import BioSeqDatabase
 from Bio.SeqRecord import SeqRecord
@@ -1256,7 +1255,7 @@ class BioSeqAnn(Model):
                                                     annotation.missing[f],
                                                     f)
 
-                ref1 = Seq(str(annotation.missing[f]), IUPAC.unambiguous_dna)
+                ref1 = Seq(str(annotation.missing[f]))
                 rid1 = "Ref1_" + str(f) + "_" + str(randomid(N=2))
                 refrec1 = SeqRecord(seq=ref1, features=[one_seqfeat], id=rid1)
                 all_seqrecs.update({f: refrec1})
@@ -1270,13 +1269,13 @@ class BioSeqAnn(Model):
 
         # Exons only
         exononly_seq = "".join([str(ft) for ft in exons_only])
-        refseq_exons = Seq(exononly_seq, IUPAC.unambiguous_dna)
+        refseq_exons = Seq(exononly_seq)
         refid_exons = "RefExons_" + str(randomid())
         refrec_exons = SeqRecord(seq=refseq_exons, features=exon_feats,
                                  id=refid_exons)
         # All seqs
         seq = "".join([str(ft) for ft in all_seqs])
-        refseq = Seq(seq, IUPAC.unambiguous_dna)
+        refseq = Seq(seq)
         refid = "RefAll_" + str(randomid())
         refrec = SeqRecord(seq=refseq, features=all_feats, id=refid)
 
@@ -1337,7 +1336,7 @@ class BioSeqAnn(Model):
                         combo_seq.append(rec.seq)
 
                         seqtmp = "".join([str(ft) for ft in combo_seq])
-                        ctmpseq = Seq(seqtmp, IUPAC.unambiguous_dna)
+                        ctmpseq = Seq(seqtmp)
                         ctmpid = "|".join([str(ft) for ft in feat_names]) \
                                  + "_" + str(randomid(N=2))
 
@@ -1377,7 +1376,7 @@ class BioSeqAnn(Model):
                     combo_seq.append(rec.seq)
 
                     seqtmp = "".join([str(ft) for ft in combo_seq])
-                    ctmpseq = Seq(seqtmp, IUPAC.unambiguous_dna)
+                    ctmpseq = Seq(seqtmp)
                     ctmpid = "|".join([str(ft) for ft in feat_names]) \
                              + "_" + str(randomid(N=2))
 
