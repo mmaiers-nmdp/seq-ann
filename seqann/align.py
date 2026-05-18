@@ -25,7 +25,6 @@
 from __future__ import absolute_import
 
 import re
-from Bio.Alphabet import SingleLetterAlphabet
 from Bio.SeqRecord import SeqRecord
 from subprocess import Popen
 from subprocess import PIPE
@@ -34,7 +33,6 @@ from subprocess import STDOUT
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio import AlignIO
-from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature
 from Bio.SeqFeature import FeatureLocation
 from Bio.SeqFeature import ExactPosition
@@ -299,7 +297,7 @@ def resolve_feats(feat_list, seqin, seqref, start, locus, missing, verbose=False
     """
     structures = get_structures()
     logger = logging.getLogger("Logger." + __name__)
-    seq = SeqRecord(seq=Seq("".join(seqin), SingleLetterAlphabet()))
+    seq = SeqRecord(seq=Seq("".join(seqin)))
     seq_covered = len(seq.seq)
     coordinates = dict(map(lambda x: [x, 1],
                        [i for i in range(0, len(seq.seq)+1)]))
@@ -330,7 +328,7 @@ def resolve_feats(feat_list, seqin, seqref, start, locus, missing, verbose=False
                 if re.search("-", str(seqrec.seq)):
                     l1 = len(seqrec.seq)
                     newseq = re.sub(r'-', '', str(seqrec.seq))
-                    seqrec.seq = Seq(newseq, IUPAC.unambiguous_dna)
+                    seqrec.seq = Seq(newseq)
                     tmdiff = l1 - len(newseq)
                     diff += tmdiff
 
@@ -361,7 +359,7 @@ def resolve_feats(feat_list, seqin, seqref, start, locus, missing, verbose=False
                 if re.search("-", str(seqrec.seq)):
                     l1 = len(seqrec.seq)
                     newseq = re.sub(r'-', '', str(seqrec.seq))
-                    seqrec.seq = Seq(newseq, IUPAC.unambiguous_dna)
+                    seqrec.seq = Seq(newseq)
                     tmdiff = l1 - len(newseq)
                     diff += tmdiff
 
