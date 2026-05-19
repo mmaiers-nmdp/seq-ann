@@ -67,7 +67,17 @@ if os.getenv("BIOSQLPORT"):
 
 
 def download_dat(url, dat):
-    urllib.request.urlretrieve(url, dat)
+    import io
+    import zipfile
+    try:
+        urllib.request.urlretrieve(url, dat)
+    except Exception:
+        zip_url = url.rsplit('.dat', 1)[0] + '.dat.zip'
+        with urllib.request.urlopen(zip_url) as r:
+            zf = zipfile.ZipFile(io.BytesIO(r.read()))
+            name = next(n for n in zf.namelist() if n.endswith('.dat'))
+            with open(dat, 'wb') as f:
+                f.write(zf.read(name))
 
 
 # TODO: Use the AWS Lamba API for getting latest IMGT/DB
