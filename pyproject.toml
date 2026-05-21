@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seq-ann"
+version = "1.1.0"
+description = "Sequence Annotation"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+license = "LGPL-3.0-or-later"
+license-files = ["COPYING", "AUTHORS.md"]
+authors = [
+    { name = "NMDP Bioinformatics, CIBMTR", email = "cibmtr-pypi@nmdp.org" },
+]
+keywords = ["seqann"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "biopython==1.75",
+    "PyMySQL==0.9.3",
+    "bson==0.5.8",
+    "requests==2.22.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/nmdp-bioinformatics/seq-ann"
+Documentation = "https://seqann.readthedocs.io"
+
+[dependency-groups]
+build = [
+    "build>=1.2",
+]
+docs = [
+    "myst-parser>=0.18,<1",
+    "sphinx>=5,<7",
+    "sphinx-rtd-theme>=1,<2",
+    "watchdog>=4",
+]
+lint = [
+    "flake8>=7",
+]
+test = [
+    "coverage>=7",
+]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["seqann*"]
+
+[tool.setuptools.package-data]
+seqann = [
+    "data/*.csv",
+    "data/blast/*",
+    "data/allele_lists/*",
+    "data/alignments/3300/*",
+    "data/alignments/3290/*",
+    "data/alignments/3310/*",
+]
