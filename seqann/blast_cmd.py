@@ -37,8 +37,7 @@ import re
 has_hla = lambda x: True if re.search("HLA", x) else False
 
 
-def blastn(sequences, locus, nseqs, kir=False,
-           verbose=False, refdata=None, evalue=10):
+def blastn(sequences, locus, nseqs, verbose=False, refdata=None, evalue=10):
     """
     Gets the a list of alleles that are the most similar to the input sequence
 
@@ -50,8 +49,6 @@ def blastn(sequences, locus, nseqs, kir=False,
     :type nseqs: ``int``
     :param evalue: The evalue to use (default = 10)
     :type evalue: ``int``
-    :param kir: Run with KIR or not
-    :type kir: ``bool``
     :param verbose: Run in versboe
     :type verbose: ``bool``
     :param refdata: An object with reference data
@@ -87,9 +84,7 @@ def blastn(sequences, locus, nseqs, kir=False,
                                          out=output_xml)
 
     stdout, stderr = blastn_cline()
-    loc = locus
-    if not kir:
-        loc = locus.split("-")[1]
+    loc = locus.split("-")[1]
 
     blast_qresult = SearchIO.read(output_xml, 'blast-xml')
 
@@ -109,13 +104,10 @@ def blastn(sequences, locus, nseqs, kir=False,
     l = len(blast_qresult.hits) if load_blast > len(blast_qresult.hits) else load_blast
 
     # TODO: update all blast files to have HLA-
-    if locus in refdata.hla_loci and not kir:
+    if locus in refdata.hla_loci:
         alleles = [blast_qresult[i].id.split("_")[0] for i in range(0, l)
                    if blast_qresult[i].id.split("*")[0] == locus or "HLA-" + blast_qresult[i].id.split("*")[0] == locus]
         alleles = ["HLA-" + a if not has_hla(a) else a for a in alleles]
-    if kir:
-        alleles = [blast_qresult[i].id.split("_")[0] for i in range(0, l)
-                   if blast_qresult[i].id.split("*")[0] == locus]
 
     if verbose:
         logger.info("Blast alleles: " + ",".join(alleles))
@@ -184,12 +176,11 @@ def blastn(sequences, locus, nseqs, kir=False,
     return blast_o
 
 
-def get_locus(sequences, kir=False, verbose=False, refdata=None, evalue=10):
+def get_locus(sequences, verbose=False, refdata=None, evalue=10):
     """
     Gets the locus of the sequence by running blastn
 
     :param sequences: sequenences to blast
-    :param kir: bool whether the sequences are KIR or not
     :rtype: ``str``
 
     Example usage:
@@ -230,17 +221,13 @@ def get_locus(sequences, kir=False, verbose=False, refdata=None, evalue=10):
 
     loci = []
     for i in range(0, 3):
-        if kir:
-            loci.append(blast_qresult[i].id.split("*")[0])
-        else:
-            loci.append(blast_qresult[i].id.split("*")[0])
+        loci.append(blast_qresult[i].id.split("*")[0])
 
     locus = set(loci)
     if len(locus) == 1:
-        if has_hla(loci[0]) or kir:
+        if has_hla(loci[0]):
             return loci[0]
         else:
             return "HLA-" + loci[0]
     else:
         return ''
-

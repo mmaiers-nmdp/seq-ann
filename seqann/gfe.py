@@ -62,8 +62,10 @@ class GFE(object):
         HLA-DQB1w0-4-0-141-0-12-0-4-0-0-0-0-0
 
     '''
-    def __init__(self, url="http://feature.nmdp-bioinformatics.org",
-                 loci=['KIR2DP1', 'KIR2DL5A', 'KIR2DS4', 'HLA-DRA', 'HLA-DPA1', 'HLA-DQA1', 'HLA-DPB1', 'KIR2DS2', 'KIR3DP1', 'HLA-DRB4', 'KIR2DL1', 'KIR2DS5', 'HLA-DRB3', 'KIR2DS3', 'KIR3DL1', 'HLA-A', 'HLA-DRB5', 'KIR2DL4', 'HLA-DQB1', 'KIR3DL2', 'HLA-B', 'KIR3DS1', 'KIR2DL5B', 'HLA-DRB1', 'KIR3DL3', 'KIR2DS1', 'HLA-C'],
+    def __init__(self, url="https://feature.b12x.org",
+                 loci=['HLA-DRA', 'HLA-DPA1', 'HLA-DQA1', 'HLA-DPB1',
+                       'HLA-DRB4', 'HLA-DRB3', 'HLA-A', 'HLA-DRB5',
+                       'HLA-DQB1', 'HLA-B', 'HLA-DRB1', 'HLA-C'],
                  load_features=False, store_features=False,
                  cached_features=None,
                  verbose=False,
@@ -191,11 +193,14 @@ class GFE(object):
                         accessions.update({feat: feature.accession})
                         features.append(feature)
                     except ApiException as e:
-                        self.logger.error(self.logname + "Exception when calling DefaultApi->create_feature" + e)
+                        self.logger.error(
+                            "%sException when calling DefaultApi->create_feature: %s",
+                            self.logname, e)
                         blank_feat = Feature(term=feat, rank=1, locus=locus,
                                              sequence=seq)
                         accessions.update({feat: 0})
                         features.append(blank_feat)
+                        feature = blank_feat
 
                     # Store new features for quick retrieval if flag passed
                     if self.store_features:
@@ -245,11 +250,14 @@ class GFE(object):
                         accessions.update({feat: feature.accession})
                         features.append(feature)
                     except ApiException as e:
-                        self.logger.error(self.logname + "Exception when calling DefaultApi->create_feature %e" + e)
+                        self.logger.error(
+                            "%sException when calling DefaultApi->create_feature: %s",
+                            self.logname, e)
                         blank_feat = Feature(term=term, rank=rank, locus=locus,
                                              sequence=seq)
                         accessions.update({feat: 0})
                         features.append(blank_feat)
+                        feature = blank_feat
 
                     # Store new features for quick retrieval if flag passed
                     if self.store_features:

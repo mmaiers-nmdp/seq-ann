@@ -24,5 +24,5 @@
 from __future__ import absolute_import
 from .sequence_annotation import BioSeqAnn
 
-
+__version__ = '1.1.0'
 

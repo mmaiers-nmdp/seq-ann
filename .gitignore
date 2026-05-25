@@ -73,6 +73,3 @@ docs/_build/
 target/
 .idea/
 tags
-
-# pyenv python configuration file
-.python-version

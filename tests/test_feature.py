@@ -63,13 +63,13 @@ class TestFeature(unittest.TestCase):
         pass
 
     def test_001_client(self):
-        client = ApiClient(host="http://feature.nmdp-bioinformatics.org")
+        client = ApiClient(host="https://feature.b12x.org")
         self.assertIsInstance(client, ApiClient)
-        self.assertEqual(client.host, "http://feature.nmdp-bioinformatics.org")
+        self.assertEqual(client.host, "https://feature.b12x.org")
         pass
 
     def test_002_api(self):
-        client = ApiClient(host="http://feature.nmdp-bioinformatics.org")
+        client = ApiClient(host="https://feature.b12x.org")
         api_instance = FeaturesApi(api_client=client)
         self.assertIsInstance(api_instance, FeaturesApi)
         pass
@@ -112,7 +112,7 @@ class TestFeature(unittest.TestCase):
         locus = "HLA-A"
         seq = "TGTGA"
         accession = 1
-        client = ApiClient(host="http://feature.nmdp-bioinformatics.org")
+        client = ApiClient(host="https://feature.b12x.org")
         api = FeaturesApi(api_client=client)
         request = FeatureRequest(locus=locus,
                                  term=feat,
@@ -125,11 +125,10 @@ class TestFeature(unittest.TestCase):
 
     @ignore_warnings
     def test_006_exception(self):
-        client = ApiClient(host="http://feature.nmdp-bioinformatics.org")
+        client = ApiClient(host="https://feature.b12x.org")
         api = FeaturesApi(api_client=client)
         request = FeatureRequest(locus="HLA-Z")
         with self.assertRaises(ApiException) as context:
             api.create_feature(body=request)
         self.assertEqual(context.exception.reason, "Internal Server Error")
         pass
-

@@ -32,15 +32,12 @@ from Bio.Alphabet import IUPAC
 import os
 import glob
 from BioSQL import BioSeqDatabase
-import re
 from datetime import date, datetime
 from typing import List, Dict
 import pymysql
 import pandas as pd
 from Bio.SeqUtils import GC
 from Bio.SeqUtils import molecular_weight
-
-is_kir = lambda x: True if re.search("KIR", x) else False
 
 hladat = 'NHP.dat'
 #hladat = 'seqann/data/hla.dat'
@@ -89,13 +86,6 @@ for r in summary1.keys():
         data.update
 
 summary1.to_csv("nhp-lengths.csv")
-
-# summary2 = counts_df.groupby(['locus', 'feature'])['gc_content'].describe()
-# summary2.to_csv("kir-gc_content.csv")
-
-# summary3 = counts_df.groupby(['locus', 'feature'])['molecular_weight'].describe()
-# summary3.to_csv("kir-molecular_weight.csv")
-
 
 
 

@@ -3,6 +3,7 @@
 
 import pymysql
 from Bio import SeqIO
+from Bio.Seq import Seq
 from BioSQL import BioSeqDatabase
 from BioSQL.BioSeq import DBSeq
 
@@ -30,10 +31,6 @@ def main():
                         help="Locus",
                         type=str)
 
-    parser.add_argument("-k", "--kir",
-                        help="Option for running with KIR",
-                        action='store_true')
-
     parser.add_argument("-s", "--server",
                         help="Option for running with a server",
                         action='store_true')
@@ -54,10 +51,6 @@ def main():
     if args.verbose:
         verbose = True
 
-    kir = False
-    if args.kir:
-        kir = True
-
     serv = False
     if args.server:
         serv = True
@@ -73,18 +66,21 @@ def main():
                                               passwd="", host="localhost",
                                               db="bioseqdb")
 
-    seqann = BioSeqAnn(verbose=True, kir=kir)
+    seqann = BioSeqAnn(verbose=True)
     for seq in SeqIO.parse(fastafile, "fasta"):
         ann = seqann.annotate(seq, locus=locus)
         print('{:*^20} {:^20} {:*^20}'.format("", str(seq.description), ""))
         l = 0
         for f in ann.annotation:
             if isinstance(ann.annotation[f], DBSeq):
-                print(f, ann.method, str(ann.annotation[f]), sep="\t")
-                l += len(ann.annotation[f])
+                feature_seq = str(ann.annotation[f])
+            elif isinstance(ann.annotation[f], Seq):
+                feature_seq = str(ann.annotation[f])
             else:
-                print(f, ann.method, str(ann.annotation[f].seq), sep="\t")
-                l += len(ann.annotation[f].seq)
+                feature_seq = str(ann.annotation[f].seq)
+
+            print(f, ann.method, feature_seq, sep="\t")
+            l += len(feature_seq)
         print("")
 
     if serv:
@@ -94,5 +90,3 @@ if __name__ == '__main__':
     """The following will be run if file is executed directly,
     but not if imported as a module"""
     main()
-
-

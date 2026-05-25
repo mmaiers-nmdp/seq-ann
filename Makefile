@@ -29,7 +29,7 @@ help:
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
 test-match:
-	python -m unittest tests.test_blast.TestBlast.test_002_blast
+	uv run --group test python -m unittest tests.test_blast.TestBlast.test_002_blast
 	
 
 clean-build: ## remove build artifacts
@@ -51,53 +51,50 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with flake8
-	flake8 gfe tests
+	uv run --group lint flake8 seqann tests
 
 test: ## run tests quickly with the default Python
-	python setup.py test
+	uv run --group test python -m unittest discover -v
 
-test-all: ## run tests on every Python version with tox
-	tox
+test-all: ## run the test suite with uv
+	uv run --group test python -m unittest discover -v
 
 coverage: ## check code coverage quickly with the default Python
-	
-	coverage run --source seqann setup.py test
+	uv run --group test coverage run --source seqann -m unittest discover
 
-	coverage report -m
-	coverage html
+	uv run --group test coverage report -m
+	uv run --group test coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	# rm -f docs/seqann.rst
-	# rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ seqann
+	# rm -f docs/seqann.md
+	# rm -f docs/modules.md
+	uv run --group docs sphinx-apidoc -o docs/ seqann
 	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
+	uv run --group docs $(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
-	/Users/mhalagan/research/NGS/GFE/gfe/sphixvenv/bin/watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	uv run --group docs watchmedo shell-command -p '*.md' -c 'uv run --group docs $(MAKE) -C docs html' -R -D .
 
 release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	uv build
+	@echo "Upload the files in dist/ with your publishing tool."
 
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	uv build
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+	uv sync
 
-venv: ## creates a Python3 virtualenv environment in venv
-	virtualenv -p python3 venv
+venv: ## creates a uv-managed virtualenv environment in .venv
+	uv sync
 	@echo "====================================================================="
-	@echo "To activate the new virtualenv, execute the following from your shell"
-	@echo "source $(PWD)/venv/bin/activate"
+	@echo "To activate the uv virtualenv, execute the following from your shell"
+	@echo "source $(PWD)/.venv/bin/activate"
 
 activate: ## activate a virtual environment. Run `make venv` before activating.
 	@echo "====================================================================="
-	@echo "To activate the new virtualenv, execute the following from your shell"
-	@echo "source $(PWD)/venv/bin/activate"
-
+	@echo "To activate the uv virtualenv, execute the following from your shell"
+	@echo "source $(PWD)/.venv/bin/activate"

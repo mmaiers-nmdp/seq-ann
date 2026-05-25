@@ -1,11 +1,13 @@
-FROM python:3.7
-MAINTAINER NMDP Bioinformatics
+FROM ghcr.io/astral-sh/uv:python3.10-bookworm-slim
+LABEL maintainer="NMDP Bioinformatics"
 
 RUN apt-get update -q \
-    && apt-get install python-mysqldb \
-    && apt-get install clustalo -y \
-	  && apt-get install ncbi-blast+ -y \
-    && apt-get autoremove \
-    && apt-get clean
+    && apt-get install -y --no-install-recommends \
+        clustalo \
+        default-libmysqlclient-dev \
+        ncbi-blast+ \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -U pip seq-ann==1.1.0
+RUN uv pip install --system seq-ann==1.1.0

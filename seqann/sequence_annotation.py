@@ -69,9 +69,9 @@ class BioSeqAnn(Model):
 
         :param server: A BioSQL database to use for retriving the sequence features. Using a BioSQL DB will speed up the annotations dramatically.
         :type server: :ref:`bio`
-        :param dbversion: The IPD-IMGT/HLA or KIR database release.
+        :param dbversion: The IPD-IMGT/HLA database release.
         :type dbversion: ``str``
-        :param datfile: The IPD-IMGT/HLA or KIR dat file to use in place of the server parameter.
+        :param datfile: The IPD-IMGT/HLA dat file to use in place of the server parameter.
         :type datfile: ``str``
         :param pid: A process label that can be provided to help track the logging output.
         :type pid: ``str``
@@ -81,8 +81,6 @@ class BioSeqAnn(Model):
         :type store_features: ``bool``
         :param cached_features: Dictionary containing all the features from the feature service.
         :type cached_features: ``dict``
-        :param kir: Flag for indicating the input sequences are from the KIR gene system.
-        :type kir: ``bool``
         :param align: Flag for producing the alignments along with the annotations.
         :type align: ``bool``
         :param verbose: Flag for running in verbose mode.
@@ -94,16 +92,15 @@ class BioSeqAnn(Model):
         :param safemode: Flag for running the annotations in safemode. No alignments will be done if no feature matches were made. This can prevent the alignment step for running for too long on bad sequences.
         :type safemode: ``bool``
     '''
-    def __init__(self, server: BioSeqDatabase=None, dbversion: str='3310',
+    def __init__(self, server: BioSeqDatabase=None, dbversion: str='3640',
                  datfile: str='', verbose: bool=False, verbosity: int=0,
-                 pid: str='NA', kir: bool=False, align: bool=False,
+                 pid: str='NA', align: bool=False,
                  load_features: bool=False, store_features: bool=False,
                  refdata: ReferenceData=None,
                  cached_features: Dict=None,
                  safemode: bool=False,
                  debug: Dict=None):
 
-        self.kir = kir
         self.align = align
         self.debug = debug
         self.server = server
@@ -178,8 +175,7 @@ class BioSeqAnn(Model):
                                          dbversion=dbversion,
                                          alignments=align,
                                          verbose=refdata_verbose,
-                                         verbosity=refdata_verbosity,
-                                         kir=kir)
+                                         verbosity=refdata_verbosity)
 
         # Initalize SeqSearch for matching features
         self.seqsearch = SeqSearch(verbose=seqsearch_verbose,
@@ -268,7 +264,7 @@ class BioSeqAnn(Model):
                 self.logger.info(self.logname + " No locus provided! ")
 
             # Guessing locus with blastn
-            locus = get_locus(sequence, kir=self.kir, refdata=self.refdata)
+            locus = get_locus(sequence, refdata=self.refdata)
 
             if locus and self.verbose:
                 self.logger.info(self.logname + " Locus prediction = " + locus)
@@ -300,7 +296,7 @@ class BioSeqAnn(Model):
 
         # Run blast to get ref sequences
         blast = blastn(sequence, locus, nseqs,
-                       kir=self.kir, verbose=self.verbose,
+                       verbose=self.verbose,
                        refdata=self.refdata)
 
         # If the blastn fails..
@@ -312,7 +308,7 @@ class BioSeqAnn(Model):
             # Try and determine the locus and rerun. This is
             # useful for cases when the sequences is associated
             # with the wrong locus.
-            locus = get_locus(sequence, kir=self.kir, refdata=self.refdata)
+            locus = get_locus(sequence, refdata=self.refdata)
 
             if locus and self.verbose:
                 self.logger.info(self.logname + " Locus prediction = " + locus)
@@ -1449,4 +1445,3 @@ def getblocks(coords):
     if len(block) > 1:
         blocks.append(block)
     return blocks
-

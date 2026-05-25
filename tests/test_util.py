@@ -35,7 +35,6 @@ import unittest
 from Bio.Seq import Seq
 
 from seqann.util import isutr
-from seqann.util import is_kir
 from seqann.util import checkseq
 from seqann.util import randomid
 from seqann.util import is_classII
@@ -51,11 +50,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(isutr('three_prime_UTR'))
         self.assertTrue(isutr('five_prime_UTR'))
         self.assertFalse(isutr('exon-3'))
-        pass
-
-    def test_002_iskir(self):
-        self.assertTrue(is_kir('KIR*3DL1'))
-        self.assertFalse(is_kir('exon-3'))
         pass
 
     def test_003_is_classII(self):

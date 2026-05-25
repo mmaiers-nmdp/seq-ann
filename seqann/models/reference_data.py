@@ -30,11 +30,13 @@ import glob
 import pickle
 import logging
 import pymysql
+import zipfile
 import urllib.request
 from typing import List, Dict
 
 from seqann.util import get_structures
 from seqann.util import get_structorder
+from seqann.util import get_structmax
 
 from Bio import SeqIO
 from BioSQL import BioSeqDatabase
@@ -70,6 +72,11 @@ def download_dat(url, dat):
     urllib.request.urlretrieve(url, dat)
 
 
+def release_file(dbversion, filename):
+    return 'https://raw.githubusercontent.com/ANHIG/IMGTHLA/' \
+        + dbversion + '/' + filename
+
+
 # TODO: Use the AWS Lamba API for getting latest IMGT/DB
 
 class ReferenceData(Model):
@@ -77,10 +84,10 @@ class ReferenceData(Model):
     classdocs
     '''
     def __init__(self, server: BioSeqDatabase=None,
-                 datafile: str=None, dbversion: str='3310',
+                 datafile: str=None, dbversion: str='3640',
                  alleles: List=None, seqdata: Dict=None, hladata: Dict=None,
                  featuredata=None,
-                 kir: bool=False, alignments: bool=False,
+                 alignments: bool=False,
                  verbose: bool=False, verbosity: int=0):
         """
         ReferenceData - a model defined in Swagger
@@ -125,14 +132,12 @@ class ReferenceData(Model):
             'blastdb': 'blastdb',
             'hla_loci': 'hla_loci',
             'server_avail': 'server_avail',
-            'kir': 'kir',
             'alignments': 'alignments',
             'verbose': 'verbose',
             'verbosity': 'verbosity'
         }
         self._seqref = {}
         self._hlaref = {}
-        self._kir = kir
         self._verbose = verbose
         self._verbosity = verbosity
         self._dbversion = dbversion
@@ -143,9 +148,8 @@ class ReferenceData(Model):
 
         self.logger = logging.getLogger("Logger." + __name__)
 
-        hla_url = 'https://raw.githubusercontent.com/ANHIG/IMGTHLA/' \
-            + dbversion + '/hla.dat'
-        kir_url = 'ftp://ftp.ebi.ac.uk/pub/databases/ipd/kir/KIR.dat'
+        hla_file = 'hla.dat.zip' if int(dbversion) >= 3560 else 'hla.dat'
+        hla_url = release_file(dbversion, hla_file)
         hla_loci = ['HLA-A', 'HLA-B', 'HLA-C', 'HLA-DRB1', 'HLA-DQB1',
                     'HLA-DPB1', 'HLA-DQA1', 'HLA-DPA1', 'HLA-DRB3',
                     'HLA-DRB4', 'HLA-DRB5', 'HLA-DRA']
@@ -153,7 +157,6 @@ class ReferenceData(Model):
         if self.verbose and verbosity > 0:
             self.logger.info("IPD-IMGT/HLA release = " + str(dbversion))
             self.logger.info("HLA URL = " + hla_url)
-            self.logger.info("KIR URL = " + kir_url)
             if self.server_avail:
                 self.logger.info("Using BioSQL Server")
                 self.logger.info("BIOSQLUSER = " + biosqluser)
@@ -169,14 +172,9 @@ class ReferenceData(Model):
         # TODO: Download! Don't have in package!
         hla_names = []
         data_dir = os.path.dirname(__file__)
-        if kir:
-            blastdb = data_dir + '/../data/blast/KIR'
-            allele_list = data_dir + '/../data/allele_lists/Allelelist.' \
-                                   + 'KIR.txt'
-        else:
-            blastdb = data_dir + '/../data/blast/' + dbversion
-            allele_list = data_dir + '/../data/allele_lists/Allelelist.' \
-                                   + dbversion + '.txt'
+        blastdb = data_dir + '/../data/blast/' + dbversion
+        allele_list = data_dir + '/../data/allele_lists/Allelelist.' \
+                               + dbversion + '.txt'
 
         if alleles:
             self._hla_names = alleles
@@ -184,16 +182,16 @@ class ReferenceData(Model):
             splitter = " " if int(dbversion) < 3320 else ","
             # Open allele list file
             try:
+                if not os.path.isfile(allele_list):
+                    download_dat(release_file(dbversion, 'Allelelist.txt'),
+                                 allele_list)
                 with open(allele_list, 'r') as f:
                     for line in f:
                         line = line.rstrip()
                         if re.search("#", line):
                             continue
                         accession, name = line.split(splitter)
-                        if not kir:
-                            hla_names.append("HLA-" + name)
-                        else:
-                            hla_names.append(name)
+                        hla_names.append("HLA-" + name)
                     f.close()
                 if self.verbose and verbosity > 0:
                     self.logger.info("Loaded " + str(len(hla_names)) + " allele names")
@@ -211,11 +209,7 @@ class ReferenceData(Model):
         feature_lengths = {}
         columns = ['mean', 'std', 'min', 'max']
 
-        featurelength_file = ''
-        if kir:
-            featurelength_file = data_dir + "/../data/kir-feature_lengths.csv"
-        else:
-            featurelength_file = data_dir + "/../data/feature_lengths.csv"
+        featurelength_file = data_dir + "/../data/feature_lengths.csv"
 
         if featuredata:
             self._feature_lengths = featuredata
@@ -246,16 +240,7 @@ class ReferenceData(Model):
         self._structures = get_structures()
         self._struct_order = get_structorder()
 
-        self._structure_max = {'KIR2DP1': 20, 'KIR2DL5A': 20, 'KIR2DS4': 20,
-                               'HLA-DPA1': 9, 'HLA-DQA1': 9, 'KIR2DL2': 20,
-                               'HLA-DPB1': 11, 'KIR2DS2': 20, 'KIR3DP1': 20,
-                               'HLA-DRB4': 13, 'KIR2DL1': 20, 'KIR2DS5': 20,
-                               'HLA-DRB3': 13, 'KIR2DS3': 20, 'KIR3DL1': 20,
-                               'HLA-A': 17, 'HLA-DRB5': 13, 'KIR2DL4': 20,
-                               'HLA-DQB1': 13, 'KIR3DL2': 20, 'HLA-B': 15,
-                               'KIR3DS1': 20, 'KIR2DL5B': 20, 'HLA-DRB1': 13,
-                               'KIR3DL3': 20, 'KIR2DS1': 20, 'HLA-C': 17,
-                               'HLA-DRA': 9}
+        self._structure_max = get_structmax()
 
         # Starting location of sequence for IPD-IMGT/HLA alignments
         # ** DRA location is not right **
@@ -302,19 +287,21 @@ class ReferenceData(Model):
             self._hlaref = hladata
             self._seqref = seqdata
         elif not self._server_avail:
-            if kir:
-                datfile = data_dir + '/../data/KIR.dat'
-            else:
-                datfile = data_dir + '/../data/' + dbversion + '.hla.dat'
+            datfile = data_dir + '/../data/' + dbversion + '.hla.dat'
 
-            if not os.path.isfile(datfile) and not kir:
+            if not os.path.isfile(datfile):
                 if self.verbose:
-                    self.logger.info("Downloding KIR data file - " + datfile)
-                download_dat(hla_url, datfile)
-            elif not os.path.isfile(datfile) and kir:
-                if self.verbose:
-                    self.logger.info("Downloding HLA data file - " + datfile)
-                download_dat(kir_url, datfile)
+                    self.logger.info("Downloading HLA data file - " + datfile)
+                if hla_file.endswith(".zip"):
+                    zipfile_name = datfile + ".zip"
+                    download_dat(hla_url, zipfile_name)
+                    with zipfile.ZipFile(zipfile_name) as z:
+                        z.extract('hla.dat', os.path.dirname(datfile))
+                    os.rename(os.path.join(os.path.dirname(datfile),
+                                           'hla.dat'),
+                              datfile)
+                else:
+                    download_dat(hla_url, datfile)
 
             # Load HLA dat file
             seqref_pickle = data_dir \
@@ -589,16 +576,6 @@ class ReferenceData(Model):
         return self._hla_names
 
     @property
-    def kir(self) -> bool:
-        """
-        Gets the kir of this ReferenceData.
-
-        :return: The kir of this ReferenceData.
-        :rtype: bool
-        """
-        return self._kir
-
-    @property
     def hla_loci(self) -> List[str]:
         """
         Gets the hla_loci of this ReferenceData.
@@ -749,9 +726,4 @@ class ReferenceData(Model):
             annotation.aligned = alignment
 
         return annotation
-
-
-
-
-
 

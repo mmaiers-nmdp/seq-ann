@@ -57,9 +57,11 @@ include = ["seqann*"]
 [tool.setuptools.package-data]
 seqann = [
     "data/*.csv",
+    "data/*.dat",
+    "data/*.pickle",
+    "data/*.txt",
+    "data/*.zip",
     "data/blast/*",
     "data/allele_lists/*",
-    "data/alignments/3300/*",
-    "data/alignments/3290/*",
-    "data/alignments/3310/*",
+    "data/alignments/*/*.pickle",
 ]

@@ -41,6 +41,13 @@ from seqann.gfe import GFE
 from Bio.Alphabet import generic_dna
 from seqann.models.annotation import Annotation
 from seqann.feature_client.models.feature import Feature
+from seqann.feature_client.rest import ApiException
+
+
+class FailingFeatureApi(object):
+
+    def create_feature(self, body):
+        raise ApiException(status=503, reason="Service Unavailable")
 
 
 def ignore_warnings(test_func):
@@ -88,4 +95,19 @@ class TestGfe(unittest.TestCase):
     def test_003_store(self):
         gfe = GFE(store_features=True)
         self.assertTrue(gfe.store_features)
+        pass
+
+    def test_004_api_exception_returns_blank_feature(self):
+        gfe = GFE()
+        gfe.api = FailingFeatureApi()
+        annotation = {
+            "exon_1": SeqRecord(seq=Seq("ATCG", generic_dna),
+                                id="004_gfe")
+        }
+        features, gfe_string = gfe.get_gfe(Annotation(annotation=annotation),
+                                           "HLA-A")
+
+        self.assertEqual(len(features), 1)
+        self.assertEqual(features[0].accession, None)
+        self.assertTrue(gfe_string.startswith("HLA-Aw0"))
         pass
