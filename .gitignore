@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+GByte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -74,3 +74,4 @@ target/
 .idea/
 tags
 data/
+seqann/data/
